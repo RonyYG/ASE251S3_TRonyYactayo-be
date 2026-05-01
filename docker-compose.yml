@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Servicio de Base de Datos (SQL Server)
+  sqlserver_db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver_container
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrongPassword123
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-U", "sa", "-P", "YourStrongPassword123", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Servicio de la Aplicación (Spring Boot)
+  springboot_app:
+    build: .
+    container_name: spring_app_container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://sqlserver_db:1433;databaseName=db_empleados;encrypt=true;trustServerCertificate=true
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=YourStrongPassword123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      sqlserver_db:
+        condition: service_healthy
