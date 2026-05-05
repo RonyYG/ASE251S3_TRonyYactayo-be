@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.vallegrande.mybackend.model.Employee;
 import pe.edu.vallegrande.mybackend.repository.EmployeeRepository;
-import java.time.LocalDateTime;
-import java.util.List; // <--- No olvides este import
+import java.util.List;
 
 @Service
 public class EmployeeService {
@@ -13,19 +12,23 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository repository;
 
-    // Método para listar (El que te falta)
-    public List<Employee> findAll() {
-        return repository.findAll();
+    public List<Employee> findAll() { return repository.findAll(); }
+
+    public Employee save(Employee employee) { return repository.save(employee); }
+
+    public void deleteLogical(Long id) {
+        repository.findById(id).ifPresent(emp -> {
+            emp.setStatus("I");
+            repository.save(emp);
+        });
     }
 
-    public Employee save(Employee employee) {
-        employee.setStatus("A");
-        employee.setUserCreate("RONY_ADMIN");
-        employee.setDateCreate(LocalDateTime.now());
-        return repository.save(employee);
+    public void restore(Long id) {
+        repository.findById(id).ifPresent(emp -> {
+            emp.setStatus("A");
+            repository.save(emp);
+        });
     }
 
-    public Employee findById(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    public void deletePhysical(Long id) { repository.deleteById(id); }
 }
